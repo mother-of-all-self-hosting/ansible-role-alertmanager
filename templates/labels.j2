@@ -1,0 +1,35 @@
+{% if alertmanager_container_labels_traefik_enabled %}
+traefik.enable=true
+
+{% if alertmanager_container_labels_traefik_docker_network %}
+traefik.docker.network={{ alertmanager_container_labels_traefik_docker_network }}
+{% endif %}
+
+traefik.http.services.{{ alertmanager_identifier }}.loadbalancer.server.port=9100
+
+{% set middlewares = [] %}
+
+{% if alertmanager_basic_auth_enabled %}
+traefik.http.middlewares.{{ alertmanager_identifier }}-auth.basicauth.users={{ alertmanager_container_label_basicauth_users }}
+{% set middlewares = middlewares + [alertmanager_identifier + '-auth@docker'] %}
+{% endif %}
+
+traefik.http.middlewares.{{ alertmanager_identifier }}-strip-prefix.stripprefix.prefixes={{ alertmanager_path_prefix }}
+{% set middlewares = middlewares + [alertmanager_identifier + '-strip-prefix@docker'] %}
+
+traefik.http.routers.{{ alertmanager_identifier }}.rule={{ alertmanager_container_labels_traefik_rule }}
+{% if middlewares | length > 0 %}
+traefik.http.routers.{{ alertmanager_identifier }}.middlewares={{ middlewares | join(',') }}
+{% endif %}
+traefik.http.routers.{{ alertmanager_identifier }}.service={{ alertmanager_identifier }}
+traefik.http.routers.{{ alertmanager_identifier }}.priority={{ alertmanager_container_labels_traefik_priority }}
+traefik.http.routers.{{ alertmanager_identifier }}.tls={{ alertmanager_container_labels_traefik_tls | to_json }}
+{% if alertmanager_container_labels_traefik_tls %}
+traefik.http.routers.{{ alertmanager_identifier }}.tls.certResolver={{ alertmanager_container_labels_traefik_tls_certResolver }}
+{% endif %}
+traefik.http.routers.{{ alertmanager_identifier }}.entrypoints={{ alertmanager_container_labels_traefik_entrypoints }}
+{% endif %}
+traefik.http.services.{{ alertmanager_identifier }}.loadbalancer.server.port=9090
+
+
+{{ alertmanager_container_labels_additional_labels }}

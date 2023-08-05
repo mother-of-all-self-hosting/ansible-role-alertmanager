@@ -1,0 +1,12 @@
+---
+
+- name: Fail if required alertmanager settings not defined
+  ansible.builtin.fail:
+    msg: >
+      You need to define a required configuration setting (`{{ item }}`).
+  when: "vars[item] == ''"
+  with_items:
+    - alertmanager_identifier
+    - alertmanager_uid
+    - alertmanager_gid
+    - alertmanager_container_network

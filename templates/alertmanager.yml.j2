@@ -1,0 +1,16 @@
+#jinja2: lstrip_blocks: "True"
+
+
+#
+# Ansible managed
+#
+
+global: {{ alertmanager_config_global | to_json }}
+
+
+templates:
+- '/etc/alertmanager/templates/*.tmpl'
+
+receivers: {{ alertmanager_config_receivers | to_json }}
+
+route: {{ alertmanager_config_route | to_json }}

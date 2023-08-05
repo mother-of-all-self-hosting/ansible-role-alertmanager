@@ -1,0 +1,150 @@
+---
+
+# alertmanager handles alerts sent by client applications such as Prometheus 
+# Project source code URL: https://github.com/prometheus/alertmanager
+
+alertmanager_enabled: true
+
+alertmanager_identifier: alertmanager
+
+alertmanager_version: v0.25.0
+
+alertmanager_uid: ''
+alertmanager_gid: ''
+
+# The hostname at which alertmanager is served.
+alertmanager_hostname: ''
+
+# The path at which alertmanager is served.
+# This value must either be `/` or not end with a slash (e.g. `/alertmanager`).
+alertmanager_path_prefix: /
+
+alertmanager_base_path: "{{ alertmanager_identifier }}"
+alertmanager_config_path: "{{ alertmanager_base_path }}/config"
+alertmanager_templates_path: "{{ alertmanager_base_path }}/templates"
+alertmanager_data_path: "{{ alertmanager_base_path }}/data"
+
+# List of systemd services that the alertmanager systemd service depends on
+alertmanager_systemd_required_services_list: ['docker.service']
+
+# List of systemd services that the alertmanager systemd service wants
+alertmanager_systemd_wanted_services_list: []
+
+alertmanager_container_image: "{{ alertmanager_container_image_registry_prefix }}prom/alertmanager:{{ alertmanager_container_image_tag }}"
+alertmanager_container_image_tag: "{{ alertmanager_version }}"
+alertmanager_container_image_force_pull: "{{ alertmanager_container_image.endswith(':latest') }}"
+alertmanager_container_image_registry_prefix: docker.io/
+
+# The base container network. It will be auto-created by this role if it doesn't exist already.
+alertmanager_container_network: "{{ alertmanager_identifier }}"
+
+# A list of additional container networks that the container would be connected to.
+# The role does not create these networks, so make sure they already exist.
+# Use this to expose this container to another reverse proxy, which runs in a different container network.
+alertmanager_container_additional_networks: []
+
+# Controls whether the container exposes its HTTP port (tcp/9090 in the container).
+#
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:9090"), or empty string to not expose.
+alertmanager_container_http_host_bind_port: ''
+
+
+# alertmanager_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
+# See `../templates/labels.j2` for details.
+#
+# To inject your own other container labels, see `alertmanager_container_labels_additional_labels`.
+alertmanager_container_labels_traefik_enabled: false
+alertmanager_container_labels_traefik_docker_network: "{{ alertmanager_container_network }}"
+alertmanager_container_labels_traefik_hostname: "{{ alertmanager_hostname }}"
+# The path prefix must either be `/` or not end with a slash (e.g. `/alertmanager`).
+alertmanager_container_labels_traefik_path_prefix: "{{ alertmanager_path_prefix }}"
+alertmanager_container_labels_traefik_rule: "Host(`{{ alertmanager_container_labels_traefik_hostname }}`){% if alertmanager_container_labels_traefik_path_prefix != '/' %} && PathPrefix(`{{ alertmanager_container_labels_traefik_path_prefix }}`){% endif %}"
+alertmanager_container_labels_traefik_priority: 0
+alertmanager_container_labels_traefik_entrypoints: web-secure
+alertmanager_container_labels_traefik_tls: "{{ alertmanager_container_labels_traefik_entrypoints != 'web' }}"
+alertmanager_container_labels_traefik_tls_certResolver: default  # noqa var-naming
+
+# Controls which additional headers to attach to all HTTP requests.
+# To add your own custom request headers, use `alertmanager_container_labels_traefik_additional_response_headers_custom`
+alertmanager_container_labels_traefik_additional_request_headers: "{{ alertmanager_container_labels_traefik_additional_request_headers_auto | combine(alertmanager_container_labels_traefik_additional_request_headers_custom) }}"
+alertmanager_container_labels_traefik_additional_request_headers_auto: {}
+alertmanager_container_labels_traefik_additional_request_headers_custom: {}
+
+# Controls which additional headers to attach to all HTTP responses.
+# To add your own custom response headers, use `alertmanager_container_labels_traefik_additional_response_headers_custom`
+alertmanager_container_labels_traefik_additional_response_headers: "{{ alertmanager_container_labels_traefik_additional_response_headers_auto | combine(alertmanager_container_labels_traefik_additional_response_headers_custom) }}"
+alertmanager_container_labels_traefik_additional_response_headers_auto: |
+  {{
+    {}
+    | combine ({'X-XSS-Protection': alertmanager_http_header_xss_protection} if alertmanager_http_header_xss_protection else {})
+    | combine ({'X-Frame-Options': alertmanager_http_header_frame_options} if alertmanager_http_header_frame_options else {})
+    | combine ({'X-Content-Type-Options': alertmanager_http_header_content_type_options} if alertmanager_http_header_content_type_options else {})
+    | combine ({'Content-Security-Policy': alertmanager_http_header_content_security_policy} if alertmanager_http_header_content_security_policy else {})
+    | combine ({'Permission-Policy': alertmanager_http_header_content_permission_policy} if alertmanager_http_header_content_permission_policy else {})
+    | combine ({'Strict-Transport-Security': alertmanager_http_header_strict_transport_security} if alertmanager_http_header_strict_transport_security and alertmanager_container_labels_traefik_tls else {})
+  }}
+alertmanager_container_labels_traefik_additional_response_headers_custom: {}
+
+# alertmanager_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
+# See `../templates/labels.j2` for details.
+#
+# Example:
+# alertmanager_container_labels_additional_labels: |
+#   my.label=1
+#   another.label="here"
+alertmanager_container_labels_additional_labels: ''
+
+
+# A list of extra arguments to pass to the container
+alertmanager_container_extra_arguments: []
+
+# A list of default arguments to pass to the alertmanager process
+alertmanager_process_default_arguments:
+  - "--config.file=/etc/alertmanager/alertmanager.yml"
+
+# A list of extra arguments to pass to the alertmanager process
+alertmanager_process_extra_arguments: []
+
+# holds the final list of process arguments
+alertmanager_process_arguments: "{{ alertmanager_process_default_arguments + alertmanager_process_extra_arguments }}"
+
+# alertmanager_basic_auth_enabled controls whether HTTP Basic Auth is enabled.
+# Also see `alertmanager_container_label_basicauth_users`.
+alertmanager_basic_auth_enabled: false
+alertmanager_basic_auth_username: ''
+alertmanager_basic_auth_password: ''
+# alertmanager_container_label_basicauth_users is populated at runtime based on
+# alertmanager_basic_auth_username and alertmanager_basic_auth_password
+alertmanager_container_label_basicauth_users: ''
+alertmanager_basic_auth_apache_container_image: "{{ alertmanager_basic_auth_apache_container_image_registry_prefix }}httpd:{{ alertmanager_basic_auth_apache_container_image_tag }}"
+alertmanager_basic_auth_apache_container_image_tag: "2.4.56-alpine3.17"
+alertmanager_basic_auth_apache_container_image_force_pull: "{{ alertmanager_basic_auth_apache_container_image.endswith(':latest') }}"
+alertmanager_basic_auth_apache_container_image_registry_prefix: docker.io/
+
+# Default alertmanager configuration template which covers the generic use case.
+# You can customize it by controlling the various variables inside it.
+#
+# For a more advanced customization, you can extend the default (see `alertmanager_configuration_extension_yaml`)
+# or completely replace this variable with your own template.
+alertmanager_configuration_yaml: "{{ lookup('template', 'templates/alertmanager.yml.j2') }}"
+
+alertmanager_configuration_extension_yaml: |
+  # Your custom YAML configuration goes here.
+  # This configuration extends the default starting configuration (`alertmanager_configuration_yaml`).
+  #
+  # You can override individual variables from the default configuration, or introduce new ones.
+  #
+  # If you need something more special, you can take full control by
+  # completely redefining `alertmanager_configuration_yaml`.
+
+alertmanager_configuration_extension: "{{ alertmanager_configuration_extension_yaml | from_yaml if alertmanager_configuration_extension_yaml | from_yaml is mapping else {} }}"
+
+# Holds the final configuration (a combination of the default and its extension).
+# You most likely don't need to touch this variable. Instead, see `alertmanager_configuration_yaml`.
+alertmanager_configuration: "{{ alertmanager_configuration_yaml | from_yaml | combine(alertmanager_configuration_extension, recursive=True) }}"
+
+alertmanager_config_global: []
+
+alertmanager_config_receivers: []
+
+alertmanager_config_route: []

@@ -1,0 +1,54 @@
+---
+
+- name: Ensure alertmanager paths exists
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0750
+    owner: "{{ alertmanager_uid }}"
+    group: "{{ alertmanager_gid }}"
+  with_items:
+    - "{{ alertmanager_base_path }}"
+    - "{{ alertmanager_config_path }}"
+    - "{{ alertmanager_templates_path }}"
+    - "{{ alertmanager_data_path }}"
+
+- name: Ensure alertmanager.yml installed
+  ansible.builtin.copy:
+    content: "{{ alertmanager_configuration | to_nice_yaml(indent=2, width=999999) }}"
+    dest: "{{ alertmanager_config_path }}/alertmanager.yml"
+    mode: 0644
+    owner: "{{ alertmanager_uid }}"
+    group: "{{ alertmanager_gid }}"
+
+- name: Ensure alertmanager support files created
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/{{ item }}.j2"
+    dest: "{{ alertmanager_base_path }}/{{ item }}"
+    owner: "{{ alertmanager_uid }}"
+    group: "{{ alertmanager_gid }}"
+    mode: 0640
+  with_items:
+    - labels
+
+- name: Ensure alertmanager container image is pulled
+  community.docker.docker_image:
+    name: "{{ alertmanager_container_image }}"
+    source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
+    force_source: "{{ alertmanager_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else alertmanager_container_image_force_pull }}"
+  register: result
+  retries: "{{ devture_playbook_help_container_retries_count }}"
+  delay: "{{ devture_playbook_help_container_retries_delay }}"
+  until: result is not failed
+
+- name: Ensure alertmanager container network is created
+  community.general.docker_network:
+    name: "{{ alertmanager_container_network }}"
+    driver: bridge
+
+- name: Ensure alertmanager systemd service installed
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/systemd/alertmanager.service.j2"
+    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ alertmanager_identifier }}.service"
+    mode: 0644
