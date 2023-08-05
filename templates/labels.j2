@@ -5,8 +5,6 @@ traefik.enable=true
 traefik.docker.network={{ alertmanager_container_labels_traefik_docker_network }}
 {% endif %}
 
-traefik.http.services.{{ alertmanager_identifier }}.loadbalancer.server.port=9100
-
 {% set middlewares = [] %}
 
 {% if alertmanager_basic_auth_enabled %}
@@ -29,7 +27,7 @@ traefik.http.routers.{{ alertmanager_identifier }}.tls.certResolver={{ alertmana
 {% endif %}
 traefik.http.routers.{{ alertmanager_identifier }}.entrypoints={{ alertmanager_container_labels_traefik_entrypoints }}
 {% endif %}
-traefik.http.services.{{ alertmanager_identifier }}.loadbalancer.server.port=9090
+traefik.http.services.{{ alertmanager_identifier }}.loadbalancer.server.port=9093
 
 
 {{ alertmanager_container_labels_additional_labels }}
