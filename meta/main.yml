@@ -3,7 +3,7 @@ galaxy_info:
   company: mash
   role_name: alertmanager
   namespace: mash
-  description: alertmanager
+  description: Alertmanager
   platforms:
     - name: Debian
       versions:
