@@ -8,7 +8,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 # Alertmanager handles alerts sent by client applications such as Prometheus
 # Project source code URL: https://github.com/prometheus/alertmanager
 
@@ -101,7 +100,6 @@ alertmanager_container_labels_traefik_additional_response_headers_custom: {}
 #   my.label=1
 #   another.label="here"
 alertmanager_container_labels_additional_labels: ''
-
 
 # A list of extra arguments to pass to the container
 alertmanager_container_extra_arguments: []

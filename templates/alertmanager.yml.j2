@@ -6,13 +6,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 #jinja2: lstrip_blocks: "True"
 
-
 #
 # Ansible managed
 #
 
 global: {{ alertmanager_config_global | to_json }}
-
 
 templates:
 - '/etc/alertmanager/templates/*.tmpl'
