@@ -35,7 +35,10 @@ alertmanager_templates_path: "{{ alertmanager_base_path }}/templates"
 alertmanager_data_path: "{{ alertmanager_base_path }}/data"
 
 # List of systemd services that the alertmanager systemd service depends on
-alertmanager_systemd_required_services_list: ['docker.service']
+alertmanager_systemd_required_services_list: "{{ alertmanager_systemd_required_services_list_default + alertmanager_systemd_required_services_list_auto + alertmanager_systemd_required_services_list_custom }}"
+alertmanager_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
+alertmanager_systemd_required_services_list_auto: []
+alertmanager_systemd_required_services_list_custom: []
 
 # List of systemd services that the alertmanager systemd service wants
 alertmanager_systemd_wanted_services_list: []
