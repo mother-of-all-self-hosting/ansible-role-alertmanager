@@ -29,7 +29,7 @@ alertmanager_hostname: ''
 # This value must either be `/` or not end with a slash (e.g. `/alertmanager`).
 alertmanager_path_prefix: /
 
-alertmanager_base_path: "{{ alertmanager_identifier }}"
+alertmanager_base_path: "/{{ alertmanager_identifier }}"
 alertmanager_config_path: "{{ alertmanager_base_path }}/config"
 alertmanager_templates_path: "{{ alertmanager_base_path }}/templates"
 alertmanager_data_path: "{{ alertmanager_base_path }}/data"
