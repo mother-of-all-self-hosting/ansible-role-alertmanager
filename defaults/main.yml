@@ -56,7 +56,9 @@ alertmanager_container_network: "{{ alertmanager_identifier }}"
 # A list of additional container networks that the container would be connected to.
 # The role does not create these networks, so make sure they already exist.
 # Use this to expose this container to another reverse proxy, which runs in a different container network.
-alertmanager_container_additional_networks: []
+alertmanager_container_additional_networks: "{{ alertmanager_container_additional_networks_auto + alertmanager_container_additional_networks_custom }}"
+alertmanager_container_additional_networks_auto: []
+alertmanager_container_additional_networks_custom: []
 
 # Controls whether the container exposes its HTTP port (tcp/9090 in the container).
 #
