@@ -33,7 +33,7 @@ traefik.http.routers.{{ alertmanager_identifier }}.tls.certResolver={{ alertmana
 {% endif %}
 traefik.http.routers.{{ alertmanager_identifier }}.entrypoints={{ alertmanager_container_labels_traefik_entrypoints }}
 {% endif %}
-traefik.http.services.{{ alertmanager_identifier }}.loadbalancer.server.port=9093
+traefik.http.services.{{ alertmanager_identifier }}.loadbalancer.server.port={{ alertmanager_container_http_port }}
 
 
 {{ alertmanager_container_labels_additional_labels }}
