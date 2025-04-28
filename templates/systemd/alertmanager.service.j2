@@ -26,23 +26,23 @@ ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_s
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ alertmanager_identifier }} 2>/dev/null || true'
 
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
-			--rm \
-			--name={{ alertmanager_identifier }} \
-			--log-driver=none \
-			--user={{ alertmanager_uid }}:{{ alertmanager_gid }} \
-			--cap-drop=ALL \
-			--read-only \
-			--network={{ alertmanager_container_network }} \
-			{% if alertmanager_container_http_host_bind_port %}
-			-p {{ alertmanager_container_http_host_bind_port }}:{{ alertmanager_container_http_port }} \
-			{% endif %}
-			--label-file={{ alertmanager_base_path }}/labels \
-			--mount type=bind,src={{ alertmanager_config_path }},dst=/etc/alertmanager \
-			--mount type=bind,src={{ alertmanager_data_path }},dst=/alertmanager \
-			{% for arg in alertmanager_container_extra_arguments %}
-			{{ arg }} \
-			{% endfor %}
-			{{ alertmanager_container_image }} {{ alertmanager_process_arguments|join(' ') }}
+      --rm \
+      --name={{ alertmanager_identifier }} \
+      --log-driver=none \
+      --user={{ alertmanager_uid }}:{{ alertmanager_gid }} \
+      --cap-drop=ALL \
+      --read-only \
+      --network={{ alertmanager_container_network }} \
+      {% if alertmanager_container_http_host_bind_port %}
+      -p {{ alertmanager_container_http_host_bind_port }}:{{ alertmanager_container_http_port }} \
+      {% endif %}
+      --label-file={{ alertmanager_base_path }}/labels \
+      --mount type=bind,src={{ alertmanager_config_path }},dst=/etc/alertmanager \
+      --mount type=bind,src={{ alertmanager_data_path }},dst=/alertmanager \
+      {% for arg in alertmanager_container_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
+      {{ alertmanager_container_image }} {{ alertmanager_process_arguments|join(' ') }}
 
 {% for network in alertmanager_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ alertmanager_identifier }}
