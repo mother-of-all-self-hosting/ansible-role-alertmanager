@@ -35,5 +35,4 @@ traefik.http.routers.{{ alertmanager_identifier }}.entrypoints={{ alertmanager_c
 {% endif %}
 traefik.http.services.{{ alertmanager_identifier }}.loadbalancer.server.port={{ alertmanager_container_http_port }}
 
-
 {{ alertmanager_container_labels_additional_labels }}
