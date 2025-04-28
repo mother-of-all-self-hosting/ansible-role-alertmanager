@@ -4,7 +4,7 @@
 
 ---
 
-- name: Run alertmanager installation tasks
+- name: Run Alertmanager installation tasks
   tags:
     - setup-all
     - setup-alertmanager
@@ -20,7 +20,7 @@
     - when: alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
-- name: Run alertmanager uninstallation tasks
+- name: Run Alertmanager uninstallation tasks
   tags:
     - setup-all
     - setup-alertmanager

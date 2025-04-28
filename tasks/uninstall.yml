@@ -4,26 +4,26 @@
 
 ---
 
-- name: Check existence of alertmanager systemd service
+- name: Check existence of Alertmanager systemd service
   ansible.builtin.stat:
     path: "{{ devture_systemd_docker_base_systemd_path }}/{{ alertmanager_identifier }}.service"
   register: alertmanager_service_stat
 
 - when: alertmanager_service_stat.stat.exists | bool
   block:
-    - name: Ensure alertmanager systemd service is stopped
+    - name: Ensure Alertmanager systemd service is stopped
       ansible.builtin.service:
         name: "{{ alertmanager_identifier }}"
         state: stopped
         enabled: false
         daemon_reload: true
 
-    - name: Ensure alertmanager systemd service does not exists
+    - name: Ensure Alertmanager systemd service does not exists
       ansible.builtin.file:
         path: "{{ devture_systemd_docker_base_systemd_path }}/{{ alertmanager_identifier }}.service"
         state: absent
 
-    - name: Ensure alertmanager files deleted
+    - name: Ensure Alertmanager files deleted
       ansible.builtin.file:
         path: "{{ alertmanager_base_path }}"
         state: absent
