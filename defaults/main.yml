@@ -9,7 +9,7 @@
 
 ---
 
-# alertmanager handles alerts sent by client applications such as Prometheus
+# Alertmanager handles alerts sent by client applications such as Prometheus
 # Project source code URL: https://github.com/prometheus/alertmanager
 
 alertmanager_enabled: true
@@ -22,10 +22,10 @@ alertmanager_version: v0.26.0
 alertmanager_uid: ''
 alertmanager_gid: ''
 
-# The hostname at which alertmanager is served.
+# The hostname at which Alertmanager is served.
 alertmanager_hostname: ''
 
-# The path at which alertmanager is served.
+# The path at which Alertmanager is served.
 # This value must either be `/` or not end with a slash (e.g. `/alertmanager`).
 alertmanager_path_prefix: /
 
@@ -34,13 +34,13 @@ alertmanager_config_path: "{{ alertmanager_base_path }}/config"
 alertmanager_templates_path: "{{ alertmanager_base_path }}/templates"
 alertmanager_data_path: "{{ alertmanager_base_path }}/data"
 
-# List of systemd services that the alertmanager systemd service depends on
+# List of systemd services that the Alertmanager systemd service depends on
 alertmanager_systemd_required_services_list: "{{ alertmanager_systemd_required_services_list_default + alertmanager_systemd_required_services_list_auto + alertmanager_systemd_required_services_list_custom }}"
 alertmanager_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
 alertmanager_systemd_required_services_list_auto: []
 alertmanager_systemd_required_services_list_custom: []
 
-# List of systemd services that the alertmanager systemd service wants
+# List of systemd services that the Alertmanager systemd service wants
 alertmanager_systemd_wanted_services_list: []
 
 alertmanager_container_image: "{{ alertmanager_container_image_registry_prefix }}prom/alertmanager:{{ alertmanager_container_image_tag }}"
@@ -114,11 +114,11 @@ alertmanager_container_labels_additional_labels: ''
 # A list of extra arguments to pass to the container
 alertmanager_container_extra_arguments: []
 
-# A list of default arguments to pass to the alertmanager process
+# A list of default arguments to pass to the Alertmanager process
 alertmanager_process_default_arguments:
   - "--config.file=/etc/alertmanager/alertmanager.yml"
 
-# A list of extra arguments to pass to the alertmanager process
+# A list of extra arguments to pass to the Alertmanager process
 alertmanager_process_extra_arguments: []
 
 # holds the final list of process arguments
@@ -137,7 +137,7 @@ alertmanager_basic_auth_apache_container_image_tag: "2.4.56-alpine3.17"
 alertmanager_basic_auth_apache_container_image_force_pull: "{{ alertmanager_basic_auth_apache_container_image.endswith(':latest') }}"
 alertmanager_basic_auth_apache_container_image_registry_prefix: docker.io/
 
-# Default alertmanager configuration template which covers the generic use case.
+# Default Alertmanager configuration template which covers the generic use case.
 # You can customize it by controlling the various variables inside it.
 #
 # For a more advanced customization, you can extend the default (see `alertmanager_configuration_extension_yaml`)
