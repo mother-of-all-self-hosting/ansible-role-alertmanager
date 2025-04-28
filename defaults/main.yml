@@ -1,10 +1,15 @@
 # SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
+# SPDX-FileCopyrightText: 2023 - 2024 Nikita Chernyi
+# SPDX-FileCopyrightText: 2023 - 2025 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2024 Sergio Durigan Junior
+# SPDX-FileCopyrightText: 2025 MASH project contributors
+# SPDX-FileCopyrightText: 2025 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
 
-# alertmanager handles alerts sent by client applications such as Prometheus 
+# alertmanager handles alerts sent by client applications such as Prometheus
 # Project source code URL: https://github.com/prometheus/alertmanager
 
 alertmanager_enabled: true
@@ -37,8 +42,10 @@ alertmanager_systemd_wanted_services_list: []
 
 alertmanager_container_image: "{{ alertmanager_container_image_registry_prefix }}prom/alertmanager:{{ alertmanager_container_image_tag }}"
 alertmanager_container_image_tag: "{{ alertmanager_version }}"
+alertmanager_container_image_registry_prefix: "{{ alertmanager_container_image_registry_prefix_upstream }}"
+alertmanager_container_image_registry_prefix_upstream: "{{ alertmanager_container_image_registry_prefix_upstream_default }}"
+alertmanager_container_image_registry_prefix_upstream_default: docker.io/
 alertmanager_container_image_force_pull: "{{ alertmanager_container_image.endswith(':latest') }}"
-alertmanager_container_image_registry_prefix: docker.io/
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 alertmanager_container_network: "{{ alertmanager_identifier }}"
