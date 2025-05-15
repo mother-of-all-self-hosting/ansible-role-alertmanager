@@ -4,7 +4,7 @@
 
 ---
 
-- name: Ensure Alertmanager paths exists
+- name: Ensure Alertmanager paths exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -25,7 +25,7 @@
     owner: "{{ alertmanager_uid }}"
     group: "{{ alertmanager_gid }}"
 
-- name: Ensure Alertmanager support files created
+- name: Ensure Alertmanager support files installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/{{ item }}.j2"
     dest: "{{ alertmanager_base_path }}/{{ item }}"
@@ -53,7 +53,7 @@
     driver: bridge
     driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
 
-- name: Ensure Alertmanager systemd service installed
+- name: Ensure Alertmanager systemd service is present
   ansible.builtin.template:
     src: "{{ role_path }}/templates/systemd/alertmanager.service.j2"
     dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ alertmanager_identifier }}.service"
