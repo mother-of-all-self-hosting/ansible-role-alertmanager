@@ -18,13 +18,12 @@
         enabled: false
         daemon_reload: true
 
-    - name: Ensure Alertmanager systemd service does not exists
+    - name: Ensure Alertmanager systemd service does not exist
       ansible.builtin.file:
         path: "{{ devture_systemd_docker_base_systemd_path }}/{{ alertmanager_identifier }}.service"
         state: absent
 
-    - name: Ensure Alertmanager files deleted
+    - name: Ensure Alertmanager path does not exist
       ansible.builtin.file:
         path: "{{ alertmanager_base_path }}"
         state: absent
-
