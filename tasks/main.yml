@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
+# SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
 
-- name: Run Alertmanager installation tasks
-  tags:
+- tags:
     - setup-all
     - setup-alertmanager
     - install-all
@@ -20,8 +20,7 @@
     - when: alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
-- name: Run Alertmanager uninstallation tasks
-  tags:
+- tags:
     - setup-all
     - setup-alertmanager
   block:
