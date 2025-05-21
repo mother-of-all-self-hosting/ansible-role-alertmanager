@@ -5,14 +5,18 @@
 
 ---
 
-- block:
-    - when: alertmanager_enabled | bool
+- name: Perform Alertmanager installation tasks
+  block:
+    - name: Validate Alertmanager configuration
+      when: alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
 
-    - when: alertmanager_enabled | bool
+    - name: Prepare HTTP Basic Auth for Alertmanager
+      when: alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/prepare_basic_auth.yml"
 
-    - when: alertmanager_enabled | bool
+    - name: Install Alertmanager
+      when: alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
   tags:
     - setup-all
@@ -20,8 +24,10 @@
     - install-all
     - install-alertmanager
 
-- block:
-    - when: not alertmanager_enabled | bool
+- name: Perform Alertmanager uninstallation tasks
+  block:
+    - name: Uninstall Alertmanager
+      when: not alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
   tags:
     - setup-all
