@@ -3,12 +3,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Ensure Alertmanager paths exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: 0750
+    mode: "0750"
     owner: "{{ alertmanager_uid }}"
     group: "{{ alertmanager_gid }}"
   with_items:
@@ -21,7 +20,7 @@
   ansible.builtin.copy:
     content: "{{ alertmanager_configuration | to_nice_yaml(indent=2, width=999999) }}"
     dest: "{{ alertmanager_config_path }}/alertmanager.yml"
-    mode: 0644
+    mode: "0644"
     owner: "{{ alertmanager_uid }}"
     group: "{{ alertmanager_gid }}"
 
@@ -31,7 +30,7 @@
     dest: "{{ alertmanager_base_path }}/{{ item }}"
     owner: "{{ alertmanager_uid }}"
     group: "{{ alertmanager_gid }}"
-    mode: 0640
+    mode: "0640"
   with_items:
     - labels
 
@@ -57,4 +56,4 @@
   ansible.builtin.template:
     src: "{{ role_path }}/templates/systemd/alertmanager.service.j2"
     dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ alertmanager_identifier }}.service"
-    mode: 0644
+    mode: "0644"

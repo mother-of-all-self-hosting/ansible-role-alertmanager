@@ -4,13 +4,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Perform Alertmanager installation tasks
+  tags:
+    - setup-all
+    - setup-alertmanager
+    - install-all
+    - install-alertmanager
   block:
     - name: Validate Alertmanager configuration
       when: alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
-
     - name: Prepare HTTP Basic Auth for Alertmanager
       when: alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/prepare_basic_auth.yml"
@@ -18,17 +21,12 @@
     - name: Install Alertmanager
       when: alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+
+- name: Perform Alertmanager uninstallation tasks
   tags:
     - setup-all
     - setup-alertmanager
-    - install-all
-    - install-alertmanager
-
-- name: Perform Alertmanager uninstallation tasks
   block:
     - name: Uninstall Alertmanager
       when: not alertmanager_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
-  tags:
-    - setup-all
-    - setup-alertmanager

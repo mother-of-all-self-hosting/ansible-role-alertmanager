@@ -22,11 +22,11 @@ alertmanager_data_path: "{{ alertmanager_base_path }}/data"
 # renovate: datasource=docker depName=prom/alertmanager versioning=semver
 alertmanager_version: v0.28.1
 
-alertmanager_uid: ''
-alertmanager_gid: ''
+alertmanager_uid: ""
+alertmanager_gid: ""
 
 # The hostname at which Alertmanager is served.
-alertmanager_hostname: ''
+alertmanager_hostname: ""
 
 # The path at which Alertmanager is served.
 # This value must either be `/` or not end with a slash (e.g. `/alertmanager`).
@@ -42,7 +42,7 @@ alertmanager_container_image_force_pull: "{{ alertmanager_container_image.endswi
 # Controls whether the container exposes its HTTP port (tcp/9090 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:9090"), or empty string to not expose.
-alertmanager_container_http_host_bind_port: ''
+alertmanager_container_http_host_bind_port: ""
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 alertmanager_container_network: "{{ alertmanager_identifier }}"
@@ -99,7 +99,7 @@ alertmanager_container_labels_traefik_additional_response_headers_custom: {}
 # alertmanager_container_labels_additional_labels: |
 #   my.label=1
 #   another.label="here"
-alertmanager_container_labels_additional_labels: ''
+alertmanager_container_labels_additional_labels: ""
 
 # A list of extra arguments to pass to the container
 alertmanager_container_extra_arguments: []
@@ -173,11 +173,11 @@ alertmanager_process_arguments: "{{ alertmanager_process_default_arguments + ale
 # alertmanager_basic_auth_enabled controls whether HTTP Basic Auth is enabled.
 # Also see `alertmanager_container_label_basicauth_users`.
 alertmanager_basic_auth_enabled: false
-alertmanager_basic_auth_username: ''
-alertmanager_basic_auth_password: ''
+alertmanager_basic_auth_username: ""
+alertmanager_basic_auth_password: ""
 # alertmanager_container_label_basicauth_users is populated at runtime based on
 # alertmanager_basic_auth_username and alertmanager_basic_auth_password
-alertmanager_container_label_basicauth_users: ''
+alertmanager_container_label_basicauth_users: ""
 alertmanager_basic_auth_apache_container_image: "{{ alertmanager_basic_auth_apache_container_image_registry_prefix }}httpd:{{ alertmanager_basic_auth_apache_container_image_tag }}"
 alertmanager_basic_auth_apache_container_image_tag: "2.4.56-alpine3.17"
 alertmanager_basic_auth_apache_container_image_force_pull: "{{ alertmanager_basic_auth_apache_container_image.endswith(':latest') }}"

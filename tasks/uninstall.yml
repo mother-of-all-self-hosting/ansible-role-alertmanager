@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Check existence of Alertmanager systemd service
   ansible.builtin.stat:
     path: "{{ devture_systemd_docker_base_systemd_path }}/{{ alertmanager_identifier }}.service"
   register: alertmanager_service_stat
 
-- when: alertmanager_service_stat.stat.exists | bool
+- name: Uninstall Alertmanager systemd services and files
+  when: alertmanager_service_stat.stat.exists | bool
   block:
     - name: Ensure Alertmanager systemd service is stopped
       ansible.builtin.service:
