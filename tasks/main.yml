@@ -14,7 +14,7 @@
   block:
     - name: Validate Alertmanager configuration
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
-    - name: Prepare HTTP Basic Auth for Alertmanager
+    - name: Prepare HTTP Basic authentication for Alertmanager
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/prepare_basic_auth.yml"
     - name: Install Alertmanager
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"

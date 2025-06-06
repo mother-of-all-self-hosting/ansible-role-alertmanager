@@ -170,7 +170,7 @@ alertmanager_process_extra_arguments: []
 # holds the final list of process arguments
 alertmanager_process_arguments: "{{ alertmanager_process_default_arguments + alertmanager_process_extra_arguments }}"
 
-# alertmanager_basic_auth_enabled controls whether HTTP Basic Auth is enabled.
+# alertmanager_basic_auth_enabled controls whether HTTP Basic authentication is enabled.
 # Also see `alertmanager_container_label_basicauth_users`.
 alertmanager_basic_auth_enabled: false
 alertmanager_basic_auth_username: ""
