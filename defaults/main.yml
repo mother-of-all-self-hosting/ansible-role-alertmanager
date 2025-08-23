@@ -158,7 +158,10 @@ alertmanager_systemd_required_services_list_auto: []
 alertmanager_systemd_required_services_list_custom: []
 
 # List of systemd services that the Alertmanager systemd service wants
-alertmanager_systemd_wanted_services_list: []
+alertmanager_systemd_wanted_services_list: "{{ alertmanager_systemd_wanted_services_list_default + alertmanager_systemd_wanted_services_list_auto + alertmanager_systemd_wanted_services_list_custom }}"
+alertmanager_systemd_wanted_services_list_default: []
+alertmanager_systemd_wanted_services_list_auto: []
+alertmanager_systemd_wanted_services_list_custom: []
 
 # A list of default arguments to pass to the Alertmanager process
 alertmanager_process_default_arguments:
