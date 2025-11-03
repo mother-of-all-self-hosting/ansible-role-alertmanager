@@ -20,7 +20,7 @@ alertmanager_templates_path: "{{ alertmanager_base_path }}/templates"
 alertmanager_data_path: "{{ alertmanager_base_path }}/data"
 
 # renovate: datasource=docker depName=prom/alertmanager versioning=semver
-alertmanager_version: v0.28.1
+alertmanager_version: v0.29.0
 
 alertmanager_uid: ""
 alertmanager_gid: ""
