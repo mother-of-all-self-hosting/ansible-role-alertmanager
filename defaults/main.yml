@@ -99,7 +99,9 @@ alertmanager_container_labels_traefik_additional_response_headers_custom: {}
 # alertmanager_container_labels_additional_labels: |
 #   my.label=1
 #   another.label="here"
-alertmanager_container_labels_additional_labels: ""
+alertmanager_container_labels_additional_labels: "{{ alertmanager_container_labels_additional_labels_auto | combine(alertmanager_container_labels_additional_labels_custom) }}"
+alertmanager_container_labels_additional_labels_auto: {}
+alertmanager_container_labels_additional_labels_custom: {}
 
 # A list of extra arguments to pass to the container
 alertmanager_container_extra_arguments: "{{ alertmanager_container_extra_arguments_auto + alertmanager_container_extra_arguments_custom }}"
