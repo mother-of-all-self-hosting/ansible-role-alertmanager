@@ -104,7 +104,7 @@ alertmanager_container_labels_additional_labels: "{{ alertmanager_container_labe
 alertmanager_container_labels_additional_labels_auto: {}
 alertmanager_container_labels_additional_labels_custom: {}
 
-# A list of extra arguments to pass to the container
+# A list of extra arguments to pass to the container (`docker create` command)
 alertmanager_container_extra_arguments: "{{ alertmanager_container_extra_arguments_auto + alertmanager_container_extra_arguments_custom }}"
 alertmanager_container_extra_arguments_auto: []
 alertmanager_container_extra_arguments_custom: []
