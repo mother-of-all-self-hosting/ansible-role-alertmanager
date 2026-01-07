@@ -2,7 +2,7 @@
 SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
 SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 SPDX-FileCopyrightText: 2024 Nikita Chernyi
-SPDX-FileCopyrightText: 2025 Suguru Hirahara
+SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 #}
@@ -35,6 +35,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% if alertmanager_container_http_host_bind_port %}
       -p {{ alertmanager_container_http_host_bind_port }}:{{ alertmanager_container_http_port }} \
       {% endif %}
+      --env-file={{ alertmanager_base_path }}/env \
       --label-file={{ alertmanager_base_path }}/labels \
       --mount type=bind,src={{ alertmanager_config_path }},dst=/etc/alertmanager \
       --mount type=bind,src={{ alertmanager_data_path }},dst=/alertmanager \
