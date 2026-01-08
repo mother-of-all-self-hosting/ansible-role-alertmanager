@@ -17,14 +17,6 @@
     - "{{ alertmanager_templates_path }}"
     - "{{ alertmanager_data_path }}"
 
-- name: Ensure alertmanager.yml installed
-  ansible.builtin.copy:
-    content: "{{ alertmanager_configuration | to_nice_yaml(indent=2, width=999999) }}"
-    dest: "{{ alertmanager_config_path }}/alertmanager.yml"
-    mode: "0644"
-    owner: "{{ alertmanager_uid }}"
-    group: "{{ alertmanager_gid }}"
-
 - name: Ensure Alertmanager support files installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/{{ item }}.j2"
@@ -35,6 +27,14 @@
   with_items:
     - env
     - labels
+
+- name: Ensure alertmanager.yml installed
+  ansible.builtin.copy:
+    content: "{{ alertmanager_configuration | to_nice_yaml(indent=2, width=999999) }}"
+    dest: "{{ alertmanager_config_path }}/alertmanager.yml"
+    mode: "0644"
+    owner: "{{ alertmanager_uid }}"
+    group: "{{ alertmanager_gid }}"
 
 - name: Ensure Alertmanager container image is pulled via community.docker.docker_image
   when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
