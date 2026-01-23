@@ -42,7 +42,8 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% for arg in alertmanager_container_extra_arguments %}
       {{ arg }} \
       {% endfor %}
-      {{ alertmanager_container_image }} {{ alertmanager_process_arguments|join(' ') }}
+      {{ alertmanager_container_image }} \
+      {{ alertmanager_process_extra_arguments | join(' ') }}
 
 {% for network in alertmanager_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ alertmanager_identifier }}

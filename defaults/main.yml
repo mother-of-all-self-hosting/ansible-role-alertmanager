@@ -156,6 +156,14 @@ alertmanager_floc_optout_enabled: true
 # See: `alertmanager_http_header_strict_transport_security`
 alertmanager_hsts_preload_enabled: false
 
+# A list of extra arguments to pass to the Alertmanager process
+# Example: ['--SOME_ARGUMENT']
+alertmanager_process_extra_arguments: "{{ alertmanager_process_extra_arguments_default + alertmanager_process_extra_arguments_auto + alertmanager_process_extra_arguments_custom }}"
+alertmanager_process_extra_arguments_default:
+  - "--config.file=/etc/alertmanager/alertmanager.yml"
+alertmanager_process_extra_arguments_auto: []
+alertmanager_process_extra_arguments_custom: []
+
 # List of systemd services that the Alertmanager systemd service depends on
 alertmanager_systemd_required_services_list: "{{ alertmanager_systemd_required_services_list_default + alertmanager_systemd_required_services_list_auto + alertmanager_systemd_required_services_list_custom }}"
 alertmanager_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
@@ -167,16 +175,6 @@ alertmanager_systemd_wanted_services_list: "{{ alertmanager_systemd_wanted_servi
 alertmanager_systemd_wanted_services_list_default: []
 alertmanager_systemd_wanted_services_list_auto: []
 alertmanager_systemd_wanted_services_list_custom: []
-
-# A list of default arguments to pass to the Alertmanager process
-alertmanager_process_default_arguments:
-  - "--config.file=/etc/alertmanager/alertmanager.yml"
-
-# A list of extra arguments to pass to the Alertmanager process
-alertmanager_process_extra_arguments: []
-
-# holds the final list of process arguments
-alertmanager_process_arguments: "{{ alertmanager_process_default_arguments + alertmanager_process_extra_arguments }}"
 
 # alertmanager_basic_auth_enabled controls whether HTTP Basic authentication is enabled.
 # Also see `alertmanager_container_label_basicauth_users`.
