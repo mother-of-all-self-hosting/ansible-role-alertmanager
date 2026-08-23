@@ -37,7 +37,6 @@ alertmanager_container_image_tag: "{{ alertmanager_version }}"
 alertmanager_container_image_registry_prefix: "{{ alertmanager_container_image_registry_prefix_upstream }}"
 alertmanager_container_image_registry_prefix_upstream: "{{ alertmanager_container_image_registry_prefix_upstream_default }}"
 alertmanager_container_image_registry_prefix_upstream_default: docker.io/
-alertmanager_container_image_force_pull: "{{ alertmanager_container_image.endswith(':latest') }}"
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 alertmanager_container_network: "{{ alertmanager_identifier }}"
@@ -220,7 +219,6 @@ alertmanager_basic_auth_password: ""
 alertmanager_container_label_basicauth_users: ""
 alertmanager_basic_auth_apache_container_image: "{{ alertmanager_basic_auth_apache_container_image_registry_prefix }}httpd:{{ alertmanager_basic_auth_apache_container_image_tag }}"
 alertmanager_basic_auth_apache_container_image_tag: "2.4.56-alpine3.17"
-alertmanager_basic_auth_apache_container_image_force_pull: "{{ alertmanager_basic_auth_apache_container_image.endswith(':latest') }}"
 alertmanager_basic_auth_apache_container_image_registry_prefix: docker.io/
 
 # Default Alertmanager configuration template which covers the generic use case.

@@ -13,6 +13,8 @@
     - { "old": "alertmanager_process_default_arguments", "new": "alertmanager_process_extra_arguments_default" }
     - { "old": "alertmanager_process_arguments", "new": "alertmanager_process_extra_arguments" }
     - { "old": "alertmanager_http_header_content_permission_policy", "new": "alertmanager_http_header_permissions_policy" }
+    - { "old": "alertmanager_container_image_force_pull", "new": "<removed> (the new community.docker.docker_image_pull module handles this natively)" }
+    - { "old": "alertmanager_basic_auth_apache_container_image_force_pull", "new": "<removed> (the new community.docker.docker_image_pull module handles this natively)" }
 
 - name: Fail if required Alertmanager settings not defined
   ansible.builtin.fail:
