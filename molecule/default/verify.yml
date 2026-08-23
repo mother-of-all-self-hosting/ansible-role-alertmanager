@@ -1,0 +1,259 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Verify Alertmanager
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars:
+    alertmanager_molecule_api_url: "http://127.0.0.1:{{ alertmanager_molecule_http_bind_port }}/api/v2"
+
+    # The alert that gets pushed through Alertmanager below. Its name is
+    # deliberately unlike anything Alertmanager invents on its own, so that
+    # finding it back can only mean it was accepted and stored.
+    alertmanager_molecule_alert_name: MoleculeSyntheticAlert
+
+  tasks:
+    # Role defaults are not in scope here, but the version that Renovate bumps
+    # lives in them and is what the API is checked against below.
+    - name: Load the Alertmanager role defaults
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+        name: alertmanager_defaults
+
+    - name: Wait for Alertmanager service to become active (up to 180s)
+      ansible.builtin.systemd:
+        name: alertmanager.service
+      register: alertmanager_service
+      until: alertmanager_service.status.ActiveState == 'active'
+      retries: 36
+      delay: 5
+
+    - name: Assert Alertmanager service is active
+      ansible.builtin.assert:
+        that: alertmanager_service.status.ActiveState == 'active'
+        fail_msg: "alertmanager.service not active ({{ alertmanager_service.status.ActiveState }})"
+        success_msg: "alertmanager.service is active"
+
+    - name: Retrieve Alertmanager service log for debugging
+      when: alertmanager_debug_service_enabled | bool
+      ansible.builtin.command:
+        cmd: journalctl -xeu alertmanager.service
+      changed_when: false
+
+    # Alertmanager binds its web listener before it has parsed the
+    # configuration file, and keeps serving `/-/healthy` even when parsing
+    # failed, so this only says that the process is alive.
+    - name: Wait for Alertmanager to report itself healthy (up to 180s)
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ alertmanager_molecule_http_bind_port }}/-/healthy"
+        method: GET
+      register: alertmanager_healthy
+      until: alertmanager_healthy.status == 200
+      retries: 36
+      delay: 5
+
+    # Unlike `/-/healthy`, this one only answers once the configuration has
+    # been loaded and the cluster has settled, so it is the first probe that
+    # says the configuration this role wrote was actually accepted.
+    - name: Wait for Alertmanager to report itself ready (up to 180s)
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ alertmanager_molecule_http_bind_port }}/-/ready"
+        method: GET
+      register: alertmanager_ready
+      until: alertmanager_ready.status == 200
+      retries: 36
+      delay: 5
+
+    - name: Query the Alertmanager status
+      ansible.builtin.uri:
+        url: "{{ alertmanager_molecule_api_url }}/status"
+        method: GET
+        return_content: true
+      register: alertmanager_status
+
+    # Alertmanager reports its version without a leading `v` (`0.32.2`), while
+    # the role's version variable carries one. Compared as a prefix, with any
+    # leading `v` normalized away on both sides, so that this keeps holding if
+    # either side ever changes its mind about the prefix or starts carrying a
+    # build suffix.
+    - name: Assert the running Alertmanager is the version this role installs
+      ansible.builtin.assert:
+        that: >-
+          (alertmanager_status.json.versionInfo.version | regex_replace('^v', '')).startswith(
+            alertmanager_defaults.alertmanager_version | regex_replace('^v', '')
+          )
+        fail_msg: "Alertmanager reports {{ alertmanager_status.json.versionInfo.version }}, expected {{ alertmanager_defaults.alertmanager_version }}"
+        success_msg: "Alertmanager reports {{ alertmanager_status.json.versionInfo.version }}"
+
+    # The gossip listener is a separate subsystem from the web listener, and it
+    # only reaches 'ready' after it has finished settling.
+    - name: Assert the Alertmanager cluster has settled
+      ansible.builtin.assert:
+        that:
+          - alertmanager_status.json.cluster.status == 'ready'
+          - alertmanager_status.json.cluster.peers | length == 1
+        fail_msg: "Unexpected Alertmanager cluster state: {{ alertmanager_status.json.cluster }}"
+        success_msg: "The Alertmanager cluster is ready with {{ alertmanager_status.json.cluster.peers | length }} peer(s)"
+
+    # Ties the configuration file this role templated to the running process:
+    # the receiver name below exists nowhere but in this scenario's variables,
+    # and Alertmanager can only report it back after having read the file the
+    # role generated from them.
+    - name: Assert the configuration this role wrote reached the process
+      ansible.builtin.assert:
+        that: alertmanager_molecule_receiver_name in alertmanager_status.json.config.original
+        fail_msg: "The running configuration does not mention {{ alertmanager_molecule_receiver_name }}: {{ alertmanager_status.json.config.original }}"
+        success_msg: "The running configuration is the one this role wrote"
+
+    - name: Query the Alertmanager receivers
+      ansible.builtin.uri:
+        url: "{{ alertmanager_molecule_api_url }}/receivers"
+        method: GET
+        return_content: true
+      register: alertmanager_receivers
+
+    - name: Assert the configured receiver is registered
+      ansible.builtin.assert:
+        that: alertmanager_molecule_receiver_name in (alertmanager_receivers.json | map(attribute='name') | list)
+        fail_msg: "Unexpected receivers: {{ alertmanager_receivers.json }}"
+        success_msg: "Alertmanager registered the {{ alertmanager_molecule_receiver_name }} receiver"
+
+    # Accepting an alert, storing it and routing it is what Alertmanager exists
+    # to do, and it exercises the whole pipeline rather than just the fact that
+    # a container came up: the API, the alert store, and the routing tree that
+    # this role rendered into the configuration file.
+    #
+    # No timestamps are sent, so Alertmanager stamps the alert itself and
+    # expires it after the `resolve_timeout` this scenario configured.
+    - name: Push a synthetic alert into Alertmanager
+      ansible.builtin.uri:
+        url: "{{ alertmanager_molecule_api_url }}/alerts"
+        method: POST
+        body_format: json
+        body:
+          - labels:
+              alertname: "{{ alertmanager_molecule_alert_name }}"
+              severity: critical
+              instance: molecule
+            annotations:
+              summary: A synthetic alert pushed by the Molecule scenario
+        status_code: [200]
+
+    # The alert is written to the store asynchronously, so it may not be
+    # readable back on the first try.
+    - name: Read the synthetic alert back from Alertmanager (up to 60s)
+      ansible.builtin.uri:
+        url: "{{ alertmanager_molecule_api_url }}/alerts"
+        method: GET
+        return_content: true
+      register: alertmanager_alerts
+      until: alertmanager_molecule_alert_name in (alertmanager_alerts.json | map(attribute='labels.alertname') | list)
+      retries: 12
+      delay: 5
+
+    - name: Extract the synthetic alert
+      ansible.builtin.set_fact:
+        alertmanager_molecule_alert: >-
+          {{
+            alertmanager_alerts.json
+            | selectattr('labels.alertname', 'equalto', alertmanager_molecule_alert_name)
+            | first
+          }}
+
+    - name: Assert the synthetic alert is active and routed to the configured receiver
+      ansible.builtin.assert:
+        that:
+          - alertmanager_molecule_alert.status.state == 'active'
+          - alertmanager_molecule_alert.labels.severity == 'critical'
+          - alertmanager_molecule_alert.labels.instance == 'molecule'
+          - (alertmanager_molecule_alert.receivers | map(attribute='name') | list) == [alertmanager_molecule_receiver_name]
+        fail_msg: "The synthetic alert is not as expected: {{ alertmanager_molecule_alert }}"
+        success_msg: "The synthetic alert is active and routed to {{ alertmanager_molecule_receiver_name }}"
+
+    # `now(utc=True)` returns a naive datetime, whose `.timestamp()` would be
+    # read as local time; both ends are therefore derived the same way, from
+    # the local-time `now()`, and only formatted as UTC.
+    - name: Compute the time window for the silence
+      ansible.builtin.set_fact:
+        alertmanager_molecule_silence_starts_at: "{{ '%Y-%m-%dT%H:%M:%SZ' | strftime(now().timestamp() | int, utc=True) }}"
+        alertmanager_molecule_silence_ends_at: "{{ '%Y-%m-%dT%H:%M:%SZ' | strftime(now().timestamp() | int + 7200, utc=True) }}"
+
+    # Silencing is the other half of what Alertmanager does, and it is stored
+    # by a subsystem of its own. Asserting that the alert above flips to
+    # 'suppressed' proves the silence store and the alert store are talking to
+    # each other, rather than merely that a silence was accepted.
+    - name: Create a silence matching the synthetic alert
+      ansible.builtin.uri:
+        url: "{{ alertmanager_molecule_api_url }}/silences"
+        method: POST
+        body_format: json
+        body:
+          matchers:
+            - name: alertname
+              value: "{{ alertmanager_molecule_alert_name }}"
+              isRegex: false
+              isEqual: true
+          startsAt: "{{ alertmanager_molecule_silence_starts_at }}"
+          endsAt: "{{ alertmanager_molecule_silence_ends_at }}"
+          createdBy: molecule
+          comment: A synthetic silence created by the Molecule scenario
+        status_code: [200]
+        return_content: true
+      register: alertmanager_silence_created
+
+    - name: Read the silence back from Alertmanager (up to 60s)
+      ansible.builtin.uri:
+        url: "{{ alertmanager_molecule_api_url }}/silences"
+        method: GET
+        return_content: true
+      register: alertmanager_silences
+      until: alertmanager_silence_created.json.silenceID in (alertmanager_silences.json | map(attribute='id') | list)
+      retries: 12
+      delay: 5
+
+    - name: Assert the silence is active
+      ansible.builtin.assert:
+        that: >-
+          (alertmanager_silences.json
+           | selectattr('id', 'equalto', alertmanager_silence_created.json.silenceID)
+           | map(attribute='status.state') | list) == ['active']
+        fail_msg: "The silence is not active: {{ alertmanager_silences.json }}"
+        success_msg: "The silence {{ alertmanager_silence_created.json.silenceID }} is active"
+
+    - name: Wait for the synthetic alert to become suppressed (up to 60s)
+      ansible.builtin.uri:
+        url: "{{ alertmanager_molecule_api_url }}/alerts"
+        method: GET
+        return_content: true
+      register: alertmanager_alerts_suppressed
+      until: >-
+        (alertmanager_alerts_suppressed.json
+         | selectattr('labels.alertname', 'equalto', alertmanager_molecule_alert_name)
+         | map(attribute='status.state') | list) == ['suppressed']
+      retries: 12
+      delay: 5
+
+    - name: Assert the synthetic alert is suppressed by the silence
+      ansible.builtin.assert:
+        that: >-
+          alertmanager_silence_created.json.silenceID in (
+            alertmanager_alerts_suppressed.json
+            | selectattr('labels.alertname', 'equalto', alertmanager_molecule_alert_name)
+            | map(attribute='status.silencedBy') | flatten | list
+          )
+        fail_msg: "The synthetic alert is not silenced by {{ alertmanager_silence_created.json.silenceID }}"
+        success_msg: "The synthetic alert is suppressed by the silence"
+
+    - name: Show Alertmanager verification summary
+      ansible.builtin.debug:
+        msg:
+          - "Alertmanager systemd: {{ alertmanager_service.status.ActiveState }}"
+          - "Alertmanager version: {{ alertmanager_status.json.versionInfo.version }}"
+          - "Alertmanager cluster: {{ alertmanager_status.json.cluster.status }}"
+          - "Alertmanager receivers: {{ alertmanager_receivers.json | map(attribute='name') | list }}"
+          - "Alertmanager alert: {{ alertmanager_molecule_alert.labels }}"
+          - "Alertmanager silence: {{ alertmanager_silence_created.json.silenceID }}"
