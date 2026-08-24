@@ -5,7 +5,10 @@ SPDX-FileCopyrightText: 2026 Suguru Hirahara
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-# Alertmanager Ansible role
+# Alertmanager Ansible role (deprecated)
+
+> [!WARNING]
+> **This role is deprecated and no longer maintained.** It is a duplicate of [ansible-role-prometheus-alertmanager](https://github.com/mother-of-all-self-hosting/ansible-role-prometheus-alertmanager) — the maintained role, and the one integrated into the [MASH playbook](https://github.com/mother-of-all-self-hosting/mash-playbook). Use that one instead.
 
 This is an [Ansible](https://www.ansible.com/) role which installs [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
